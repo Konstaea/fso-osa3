@@ -1,8 +1,9 @@
-POST http://localhost:3001/api/persons/
+//POST http://localhost:3001/api/persons/
+POST https://puhluettelo.onrender.com/api/persons
 Content-type: application/json
 
 {
-    "id": 3,
-    "name": "Person3",
-    "number": "789"
+    "id": 4,
+    "name": "Person44",
+    "number": "78944"
 }

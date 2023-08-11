@@ -3,6 +3,7 @@ const app = express()
 const morgan = require('morgan')
 app.use(express.json())
 app.use(morgan('tiny'))
+app.use(express.static('build'))
 
 //cors käyttöön tällä konfiguraatiolla "toistaiseksi (kohta 3b alku)"
 const cors = require('cors')
