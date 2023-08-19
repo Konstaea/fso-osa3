@@ -4,98 +4,76 @@ const morgan = require('morgan')
 app.use(express.json())
 app.use(morgan('tiny'))
 app.use(express.static('build'))
+require('dotenv').config()
+const Person = require('./models/person')
 
 //cors käyttöön tällä konfiguraatiolla "toistaiseksi (kohta 3b alku)"
 const cors = require('cors')
 app.use(cors())
 
-//tehty 3.1-3.7 (ei teht 3.8) +  3.9,
-let numbers = [
-    {
-      id: 1,
-      name: "Person1",
-      number: "123"
-    },
-    {
-      id: 2,
-      name: "Person2",
-      number: "456"
-    },
-    {
-      id: 3,
-      name: "Person3",
-      number: "789"
-    }
-  ]
+//tehty 3.1-3.7, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15,  3.18
+//ei tehty: 3.8, 3.16, 3.17
 
 //palauttaa listan henkilöistä
 app.get('/api/persons', (req, res) => {
-    res.json(numbers)
+  Person.find({}).then(persons => {
+    res.json(persons)
+  })
 })
 
-//infosivu, joka palauttaa id lukumäärän ja ajan
-app.get('/info', (req, res) => {
+//infosivu, joka palauttaa lukumäärän ja ajan
+app.get('/info', async (req, res) => {
+  const count = await Person.countDocuments({})
   const timestamp = new Date()
-  const message = "Phonebook has info for " + numbers.length + " people.<br>" + timestamp
+  const message = `Count of entries in phonebook is: ${count} people.<br>${timestamp}`
   res.send(message)
 })
 
 //Yksittäisen henkilön tietojen etsintä
-app.get('/api/persons/:id', (req,res) => {
-  const id = Number(req.params.id)
-  const person = numbers.find(person => person.id === id)
-
-  if (person) {
-    res.json(person)
-  } else {
-    res.status(404).json({error:'Ei löydy'})
-  }
+app.get('/api/persons/:id', (req, res, next) => {
+  const id = req.params.id
+  Person.findById(id)
+    .then(person => {
+      if (person) {
+        res.json(person)
+      } else {
+        res.status(404).json({ error: 'Ei löydy' })
+      }
+    })
+    .catch(error => next(error))
 })
 
 //Yksittäisen henkilön tietojen poisto
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  numbers = numbers.filter(person => person.id !== id)
-
-  response.status(204).end()
+app.delete('/api/persons/:id', (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 })
 
-//satunnaisen id:n arpominen isolla välillä käyttäen math.random
-const generateId = () => {
-  return Math.random(0,10000)
-}
-
-//Uuden henkilön lisääminen
+//Henkilön lisäys
 app.post('/api/persons', (request, response) => {
-  const person = request.body
+  const body = request.body
 
-  //virhe, jos nimi kenttä on tyhjä
-  if (!person.name) {
-    return response.status(400).json({ 
-      error: 'name missing' 
+  if (!body.Name || !body.Number) {
+    return response.status(400).json({
+      error: 'Either name or number are missing'
     })
   }
 
-  //virhe, jos numero kenttä on tyhjä
-  if (!person.number) {
-    return response.status(400).json({ 
-      error: 'number missing' 
-    })
-  }
+  const person = new Person({
+    Name: body.Name,
+    Number: body.Number
+  })
 
-  //virhe, jos nimi on jo listalla
-  const existingAlready = numbers.find(p => p.name === person.name)
-  if (existingAlready) {
-    return response.status(400).json({ error: 'name must be unique' })
-  }
-
-  person.id = generateId()
-  console.log(person)
-  numbers = numbers.concat(person)
-  response.json(person)
+  person.save().then(savedPerson => {
+    response.json(savedPerson)
+  })
 })
-  
-const PORT = process.env.PORT || 3001
+
+//Portti asetukset
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })

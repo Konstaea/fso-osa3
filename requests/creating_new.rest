@@ -1,9 +1,19 @@
-//POST http://localhost:3001/api/persons/
-POST https://puhluettelo.onrender.com/api/persons
+
+POST http://localhost:3001/api/persons/
 Content-type: application/json
 
 {
-    "id": 4,
-    "name": "Person44",
-    "number": "78944"
+    "id": 555,
+    "name": "aab aac aad",
+    "number": "243 2432 4344"
 }
+
+//POST https://puhluettelo.onrender.com/api/persons
+//Content-type: application/json
+
+//{
+//    "id": 5,
+//    "name": "3.13testi",
+//    "number": "33343443"
+//}
+
